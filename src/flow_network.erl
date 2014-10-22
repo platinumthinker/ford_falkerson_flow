@@ -71,22 +71,22 @@ ford_fulkerson_test() ->
     {Start, Stop, Map} = graph:read_config("../example/graph1"),
     {Start2, Stop2, Map2} = graph:read_config("../example/graph2"),
     [
-     ?assertEqual(graph:ford_fulkerson(Map, Start, Stop), 2000),
-     ?assertEqual(graph:ford_fulkerson(Map, Stop, Start), 2000),
-     ?assertEqual(graph:ford_fulkerson(Map2, Start2, Stop2), 1001)
+     ?assertEqual(ford_fulkerson(Map, Start, Stop), 2000),
+     ?assertEqual(ford_fulkerson(Map, Stop, Start), 2000),
+     ?assertEqual(ford_fulkerson(Map2, Start2, Stop2), 1001)
     ].
 
 remove_edge_test() ->
     {_, _, Map} = graph:read_config("../example/graph1"),
-    UG = graph:undirect(Map),
+    UG = undirect(Map),
     [
-     ?assertEqual(graph:remove_edge(UG, a, b), #{
+     ?assertEqual(remove_edge(UG, a, b), #{
                     a => #{ c => {1000,0}},
                     b => #{ c => {1,0}, d => {1000,0}},
                     c => #{ a => {0,1000}, b => {0,1}, d => {1000,0}},
                     d => #{ b => {0,1000}, c => {0,1000}}
                    }),
-     ?assertEqual(graph:remove_edge(
+     ?assertEqual(remove_edge(
                     #{a => #{c => {1000,500}},
                       b => #{c => {1,0},d => {1000,501}},
                       c => #{a => {500,1000},b => {0,1}},
@@ -96,19 +96,19 @@ remove_edge_test() ->
                       b => #{d => {1000,501}},
                       c => #{a => {500,1000}},
                       d => #{b => {501,1000}}}),
-     ?assertException(error, bad_key, graph:remove_edge(UG, e, d))
+     ?assertException(error, bad_key, remove_edge(UG, e, d))
     ].
 
 update_edge_test() ->
     {_, _, Map} = graph:read_config("../example/graph1"),
-    UG = graph:undirect(Map),
+    UG = undirect(Map),
     [
-     ?assertEqual(graph:update_edge(UG, a, b, {20, 30}), #{
+     ?assertEqual(update_edge(UG, a, b, {20, 30}), #{
                     a => #{ b => {20,30}, c => {1000,0}},
                     b => #{ a => {30,20}, c => {1,0}, d => {1000,0}},
                     c => #{ a => {0,1000}, b => {0,1}, d => {1000,0}},
                     d => #{ b => {0,1000}, c => {0,1000}}
                    }),
-     ?assertException(error, bad_key, graph:update_edge(UG, e, d, {20, 30}))
+     ?assertException(error, bad_key, update_edge(UG, e, d, {20, 30}))
     ].
 -endif. %%TEST
