@@ -58,19 +58,17 @@ bfs(G, Start, Stop) ->
 
 bfs_step(_, V, {_, [{V, MinBandwidth, Path} | _]}) ->
     {MinBandwidth, [V | Path]};
+bfs_step(_, V, {[{V, MinBandwidth, Path} | _], _}) ->
+    {MinBandwidth, [V | Path]};
 bfs_step(G, Stop, Queue) ->
     case queue:out(Queue) of
         {{value, {V, MinBand, Path}}, Q} ->
             Child = maps:get(V, G),
             NewQ = maps:fold(fun(V1, {W1, W2}, AccQ) ->
-                IsMember = lists:member(V1, Path),
-                if IsMember ->
-                    AccQ;
-                true ->
-                    NewBand = min(MinBand, abs(W1 - W2)),
-                    Item = {V1, NewBand, [V | Path]},
-                    queue:in(Item, AccQ)
-                end end, Q, Child),
+                NewBand = min(MinBand, abs(W1 - W2)),
+                Item = {V1, NewBand, [V | Path]},
+                queue:in(Item, AccQ)
+            end, Q, maps:without(Path, Child)),
             bfs_step(G, Stop, NewQ);
         {empty, _} ->
             none
@@ -98,35 +96,25 @@ ford_fulkerson(G, Start, Stop, Bandwidth) ->
     end.
 
 ford_fulkerson_step(G, V1, V2, MinBand) ->
-    case maps:find(V1, G) of
-        {ok, ChildG} ->
-            {W1, W2} = maps:get(V2, ChildG),
-            NewW = W2 + MinBand,
-            if abs(W1 - NewW) == 0 ->
-                   remove_edge(G, V1, V2, ChildG);
-               true ->
-                   update_edge(G, V1, V2, ChildG, {W1, NewW})
-            end;
-        error ->
-            ChildG = maps:get(V2, G),
-            {W1, W2} = maps:get(V1, ChildG),
-            NewW = W2 - MinBand,
-            if abs(W1 - NewW) == 0 ->
-                   remove_edge(G, V2, V1, ChildG);
-               true ->
-                   update_edge(G, V2, V1, ChildG, {W1, NewW})
-            end
+    ChildG = maps:get(V1, G),
+    {V3, V4, W3, W4} = case maps:get(V2, ChildG) of
+        {W1, W2} when W1 < W2 ->
+            {V1, V2, W1 + MinBand, W2};
+        {W1, W2} ->
+            {V2, V1, W1, W2 + MinBand}
+    end,
+    if W3 - W4 == 0 ->
+           remove_edge(G, V3, V4);
+       true ->
+           update_edge(G, V3, V4, {W3, W4})
     end.
 
 remove_edge(G, V1, V2) ->
-    remove_edge(G, V1, V2, maps:get(V1, G)).
-remove_edge(G, V1, V2, ChildG) ->
+    ChildG = maps:get(V1, G),
     NG = maps:put(V1, maps:remove(V2, ChildG), G),
     maps:put(V2, maps:remove(V1, maps:get(V2, NG)), NG).
 
-update_edge(G, V1, V2, Val) ->
-    update_edge(G, V1, V2, maps:get(V1, G), Val).
-update_edge(G, V1, V2, ChildG, {W1, W2}) ->
+update_edge(G, V1, V2, {W1, W2}) ->
+    ChildG = maps:get(V1, G),
     NG = maps:put(V1, maps:put(V2, {W1, W2}, ChildG), G),
-    NUG = maps:put(V1, maps:put(V2, {W1, W2}, ChildG), NG),
-    maps:put(V2, maps:put(V1, {W2, W1}, maps:get(V2, NUG)), NUG).
+    maps:put(V2, maps:put(V1, {W2, W1}, maps:get(V2, NG)), NG).
