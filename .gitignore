@@ -3,4 +3,5 @@
 .rebar
 *.app
 *.beam
+*.dump
 graph
