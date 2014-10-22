@@ -50,13 +50,13 @@ bfs_test() ->
             c => #{a => {500,1000},b => {0,1}},
             d => #{b => {500,1000}}},
     [
-     ?assertEqual(graph:bfs(Map, Start, Stop), {1000, [a, b, d]}),
-     ?assertEqual(graph:bfs(UG, Start, Stop), {1000, [a, b, d]}),
-     ?assertEqual(graph:bfs(UG, Start, e), none),
+     ?assertEqual(bfs(Map, Start, Stop), {1000, [a, b, d]}),
+     ?assertEqual(bfs(UG, Start, Stop), {1000, [a, b, d]}),
+     ?assertEqual(bfs(UG, Start, e), none),
      ?assertEqual(UG, UG_true),
-     ?assertEqual(graph:bfs(UG, Stop, Start), {1000, [d, b, a]}),
-     ?assertEqual(graph:bfs(UG2, Start, Stop), {1, [a, c, b, d]}),
-     ?assertEqual(graph:bfs(UG2, Stop, Start), {1, [d, b, c, a]})
+     ?assertEqual(bfs(UG, Stop, Start), {1000, [d, b, a]}),
+     ?assertEqual(bfs(UG2, Start, Stop), {1, [a, c, b, d]}),
+     ?assertEqual(bfs(UG2, Stop, Start), {1, [d, b, c, a]})
     ].
 
 -endif. %%TEST
